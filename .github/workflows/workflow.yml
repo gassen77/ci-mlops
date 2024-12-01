@@ -8,16 +8,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # Allows write access to the repository
-  packages: write  # Allows pushing to GHCR
-  id-token: write  # Optional, if you're using OIDC for authentication
+  contents: write
+  packages: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
         with:
@@ -37,19 +36,24 @@ jobs:
       - name: Install Packages
         run: pip install --upgrade pip && pip install -r requirements.txt
 
-      # Build Docker image (if not built earlier in the workflow)
+      # Build Docker image
       - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
 
-      # Login to GitHub Container Registry using the GITHUB_TOKEN
+      # Login to GitHub Container Registry using GITHUB_TOKEN
       - name: Login to GitHub Container Registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+      # Tag the Docker image after it has been built
+      - name: Tag Docker image
+        run: |
+          docker tag ghcr.io/${{ github.repository }}/my-ml-image:latest ghcr.io/${{ github.repository }}/my-ml-image:latest
+
       # Push Docker image to GHCR
       - name: Push Docker image to GHCR
         run: |
-          docker tag my-ml-image ghcr.io/${{ github.repository }}/my-ml-image:latest
           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run the Docker container
@@ -57,25 +61,18 @@ jobs:
         run: |
           docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
 
-      # Test the ML project in the container
+      # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-          docker exec ml-container python train.py   # Run training script inside the container
-          docker exec ml-container python evaluate.py  # Or any other script you want to run
+          docker exec ml-container python train.py   # Or any other script you want to run
 
-      # Collect results (if applicable)
-      - name: Collect results
-        run: |
-          docker cp ml-container:/path/to/output/results.txt ./results.txt  # Adjust paths as necessary
-          cat ./results.txt  # View the output
-
-      # Stop and remove the Docker container
+      # Cleanup Docker container
       - name: Cleanup Docker container
         run: |
           docker stop ml-container
           docker rm ml-container
 
-      # Optional: Cleanup the Docker image if you want to save space
+      # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
         run: |
           docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
