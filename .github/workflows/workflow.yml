@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write  # Allow write access to the repository
-  packages: write  # Allow pushing to GitHub Container Registry
+  contents: write  # Allows write access to the repository
+  packages: write  # Allows pushing to GHCR
   id-token: write  # Optional, if you're using OIDC for authentication
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         with:
           lfs: true
 
-      # Set up Docker (if it's not already installed)
+      # Set up Docker
       - name: Set up Docker
         run: |
           sudo apt-get update
@@ -41,11 +41,12 @@ jobs:
       - name: Build Docker image
         run: docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
 
-      # Login to GitHub Container Registry
+      # Login to GitHub Container Registry using the GITHUB_TOKEN
       - name: Login to GitHub Container Registry
-        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Push Docker image to GHCR (if not pushed earlier)
+      # Push Docker image to GHCR
       - name: Push Docker image to GHCR
         run: |
           docker tag my-ml-image ghcr.io/${{ github.repository }}/my-ml-image:latest
@@ -56,7 +57,7 @@ jobs:
         run: |
           docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
 
-      # Test the ML project (run your training/evaluation scripts)
+      # Test the ML project in the container
       - name: Test ML project in Docker container
         run: |
           docker exec ml-container python train.py   # Run training script inside the container
