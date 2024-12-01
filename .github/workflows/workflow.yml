@@ -1,4 +1,5 @@
 name: ML Workflow
+
 on:
   push:
     branches: [ "main" ]
@@ -11,6 +12,7 @@ permissions: write-all
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,7 +38,7 @@ jobs:
       - name: Evaluate Model
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: | 
+        run: |
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md
 
