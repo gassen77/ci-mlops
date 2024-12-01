@@ -67,4 +67,25 @@ jobs:
       # Push Docker image to GHCR
       - name: Push Docker image to GHCR
         run: |
-          docker push ghcr.io/${{ github.repository }}/my
+          docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+      # Run Docker container
+      - name: Run Docker container
+        run: |
+          docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+      # Test ML project inside Docker container
+      - name: Test ML project in Docker container
+        run: |
+          docker exec ml-container python train.py   # Or any other script you want to run
+
+      # Cleanup Docker container
+      - name: Cleanup Docker container
+        run: |
+          docker stop ml-container
+          docker rm ml-container
+
+      # Optional: Cleanup Docker image if you want to save space
+      - name: Cleanup Docker image
+        run: |
+          docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
