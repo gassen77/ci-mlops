@@ -6,60 +6,75 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
+
 permissions:
-  contents: write  # This allows write access to the repository
-  packages: write  # This allows pushing to GitHub Container Registry
+  contents: write  # Allow write access to the repository
+  packages: write  # Allow pushing to GitHub Container Registry
   id-token: write  # Optional, if you're using OIDC for authentication
+
 jobs:
   build:
     runs-on: ubuntu-latest  # Use Ubuntu runner
 
     steps:
-      # Step 1: Checkout the code
+      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          lfs: true  # Ensure Git LFS is handled correctly
+          lfs: true
 
-      # Step 2: Install Docker
+      # Set up Docker (if it's not already installed)
       - name: Set up Docker
         run: |
-          # Update the apt package index and install required packages
           sudo apt-get update
           sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-          
-          # Add Docker's official GPG key
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-          
-          # Set up the stable repository
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          
-          # Update apt package index again after adding Docker's repo
           sudo apt-get update
-          
-          # Install Docker
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-      # Step 3: Verify Docker installation
-      - name: Verify Docker installation
-        run: |
-          docker --version  # Check the Docker version
-          sudo docker run hello-world  # Run a simple test container
-
-      # Step 4: Install Python dependencies (example)
+      # Install Python dependencies for the ML project
       - name: Install Packages
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+        run: pip install --upgrade pip && pip install -r requirements.txt
 
-      # Step 5: Build Docker image (optional, if you have a Dockerfile)
+      # Build Docker image (if not built earlier in the workflow)
       - name: Build Docker image
-        run: |
-          docker build -t my-ml-image .
+        run: docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
 
-      # Step 6: Push Docker image to GitHub Container Registry (optional)
+      # Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
+        run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      # Push Docker image to GHCR (if not pushed earlier)
       - name: Push Docker image to GHCR
         run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker tag my-ml-image ghcr.io/${{ github.repository }}/my-ml-image:latest
           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+      # Run the Docker container
+      - name: Run Docker container
+        run: |
+          docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+      # Test the ML project (run your training/evaluation scripts)
+      - name: Test ML project in Docker container
+        run: |
+          docker exec ml-container python train.py   # Run training script inside the container
+          docker exec ml-container python evaluate.py  # Or any other script you want to run
+
+      # Collect results (if applicable)
+      - name: Collect results
+        run: |
+          docker cp ml-container:/path/to/output/results.txt ./results.txt  # Adjust paths as necessary
+          cat ./results.txt  # View the output
+
+      # Stop and remove the Docker container
+      - name: Cleanup Docker container
+        run: |
+          docker stop ml-container
+          docker rm ml-container
+
+      # Optional: Cleanup the Docker image if you want to save space
+      - name: Cleanup Docker image
+        run: |
+          docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
