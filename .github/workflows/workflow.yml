@@ -5,31 +5,59 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-  
+
 permissions: write-all
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
           lfs: true
-      - uses: iterative/setup-cml@v2
+
+      - name: Set up Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker.io
+
       - name: Install Packages
-        run: pip install --upgrade pip && pip install -r requirements.txt
-      - name: Format
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Format Code
         run: black *.py
-      - name: Train
+
+      - name: Train Model
         run: python train.py
-      - name: Evaluation
+
+      - name: Evaluate Model
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: | 
           echo "## Model Metrics" > report.md
           cat metrics.txt >> report.md
-            
+
           echo '## Confusion Matrix Plot' >> report.md
           echo '![Confusion Matrix](model_results.png)' >> report.md
 
           cml comment create report.md
+
+      - name: Create Docker Image
+        run: |
+          # Create Docker image
+          docker build -t my-ml-image .
+
+      - name: Push Docker Image to GitHub Container Registry
+        if: success() # Only push if previous steps succeed
+        run: |
+          # Log in to GitHub Container Registry (GHCR)
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+          # Tag the Docker image
+          docker tag my-ml-image ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+          # Push the Docker image to GitHub Container Registry
+          docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
