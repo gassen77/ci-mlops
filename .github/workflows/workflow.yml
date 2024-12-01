@@ -6,7 +6,10 @@ on:
   pull_request:
     branches: ["main"]
   workflow_dispatch:
-
+permissions:
+  contents: write  # This allows write access to the repository
+  packages: write  # This allows pushing to GitHub Container Registry
+  id-token: write  # Optional, if you're using OIDC for authentication
 jobs:
   build:
     runs-on: ubuntu-latest  # Use Ubuntu runner
