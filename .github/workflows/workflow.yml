@@ -32,21 +32,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-      # Install Python dependencies for the ML project
+      # Install Python dependencies for the ML project and linters
       - name: Install Packages
-        run: pip install --upgrade pip && pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black flake8  # Install linters and formatters
+
+      # Lint code using flake8
+      - name: Lint code with flake8
+        run: |
+          flake8 .  # Lint all Python files in the repo
+
+      # Format code using black
+      - name: Format code with black
+        run: |
+          black --check .  # Check if the code is formatted, will fail if not
 
       # Build Docker image
       - name: Build Docker image
         run: |
           docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
 
-      # Login to GitHub Container Registry using GITHUB_TOKEN
+      # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      # Tag the Docker image after it has been built
+      # Tag Docker image
       - name: Tag Docker image
         run: |
           docker tag ghcr.io/${{ github.repository }}/my-ml-image:latest ghcr.io/${{ github.repository }}/my-ml-image:latest
@@ -56,7 +69,7 @@ jobs:
         run: |
           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
-      # Run the Docker container
+      # Run Docker container
       - name: Run Docker container
         run: |
           docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
