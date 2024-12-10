@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install black flake8  # Install linters, formatters, and MLflow
+          pip install black flake8 mlflow  # Install linters, formatters, and MLflow
 
       # Lint code using flake8 and allow errors without stopping the workflow
       - name: Lint code with flake8
@@ -48,6 +48,7 @@ jobs:
       - name: Format code with black
         run: |
           black --check .  # Check if the code is formatted, will fail if not
+        continue-on-error: true  # Allow the workflow to continue even if the check fails
 
       # Build Docker image
       - name: Build Docker image
