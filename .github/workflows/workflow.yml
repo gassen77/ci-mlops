@@ -22,6 +22,19 @@ jobs:
         with:
           lfs: true
 
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+         python-version: '3.8'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v2
+        with:
+         path: ~/.cache/pip
+         key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}  # Modify this to change the cache key
+         restore-keys: |
+          ${{ runner.os }}-python-
+
       # Set up Docker
       - name: Set up Docker
         run: |
