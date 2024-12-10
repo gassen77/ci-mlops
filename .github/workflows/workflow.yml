@@ -95,6 +95,8 @@ jobs:
       # update dependencies inside Docker container
       - name: update depedencies
         run: |
+            docker exec ml-container pip cache purge
+            docker exec ml-container pip uninstall -y numpy
             docker exec ml-container pip install --upgrade numpy
             docker exec ml-container pip install --upgrade --force-reinstall scikit-learn
             docker exec ml-container pip install --upgrade --force-reinstall skops
