@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install black flake8  # Install linters and formatters
+          pip install black flake8  # Install linters, formatters
 
       # Lint code using flake8 and allow errors without stopping the workflow
       - name: Lint code with flake8
@@ -52,7 +52,7 @@ jobs:
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest .
+          docker build -t ghcr.io/${{ github.repository }}/my-ml-image:latest . 
 
       # Login to GitHub Container Registry
       - name: Login to GitHub Container Registry
@@ -77,20 +77,20 @@ jobs:
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-          docker exec ml-container python train.py   # Or any other script you want to run
+          docker exec ml-container python train.py  # Or any other script you want to run that uses MLflow
 
- # Step : Run your ML experiment (training script with MLflow)
+      # Step: Run your ML experiment (training script with MLflow)
       - name: Run experiment with MLflow
         run: |
-          python train.py  # Replace with your script that uses MLflow for logging
+          docker exec ml-container python train.py  # Replace with your script that uses MLflow for logging
 
-# Optional: Step 5: Upload logs and artifacts (MLflow logs) to GitHub
+      # Optional: Step: Upload logs and artifacts (MLflow logs) to GitHub
       - name: Upload MLflow artifacts
         uses: actions/upload-artifact@v2
         with:
           name: mlflow-logs
           path: mlruns  # Adjust path to where MLflow logs artifacts (usually mlruns directory)
-      
+
       # Cleanup Docker container
       - name: Cleanup Docker container
         run: |
