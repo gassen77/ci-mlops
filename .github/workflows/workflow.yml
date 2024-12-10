@@ -79,6 +79,18 @@ jobs:
         run: |
           docker exec ml-container python train.py   # Or any other script you want to run
 
+ # Step : Run your ML experiment (training script with MLflow)
+      - name: Run experiment with MLflow
+        run: |
+          python train.py  # Replace with your script that uses MLflow for logging
+
+# Optional: Step 5: Upload logs and artifacts (MLflow logs) to GitHub
+      - name: Upload MLflow artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: mlflow-logs
+          path: mlruns  # Adjust path to where MLflow logs artifacts (usually mlruns directory)
+      
       # Cleanup Docker container
       - name: Cleanup Docker container
         run: |
