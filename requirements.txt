@@ -1,6 +1,6 @@
 pandas
-scikit-learn==1.2.0
 numpy>=1.21.0
+scikit-learn>=1.2.0
 matplotlib
 skops
 black
