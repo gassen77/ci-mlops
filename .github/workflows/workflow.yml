@@ -37,7 +37,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install black flake8  # Install linters, formatters
+          pip install black flake8  # Install linters, formatters, and MLflow
 
       # Lint code using flake8 and allow errors without stopping the workflow
       - name: Lint code with flake8
@@ -84,9 +84,9 @@ jobs:
         run: |
           docker exec ml-container python train.py  # Replace with your script that uses MLflow for logging
 
-      # Optional: Step: Upload logs and artifacts (MLflow logs) to GitHub
+      # Upload MLflow artifacts (new version v3)
       - name: Upload MLflow artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: mlflow-logs
           path: mlruns  # Adjust path to where MLflow logs artifacts (usually mlruns directory)
