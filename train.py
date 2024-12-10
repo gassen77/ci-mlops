@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import skops.io as sio
+import mlflow
+import mlflow.sklearn
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, chi2
@@ -15,11 +17,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
 
+# Start MLflow experiment
+mlflow.start_run()
+
 # loading the data
 bank_df = pd.read_csv("train.csv", index_col="id", nrows=1000)
 bank_df = bank_df.drop(["CustomerId", "Surname"], axis=1)
 bank_df = bank_df.sample(frac=1)
-
 
 # Splitting data into training and testing sets
 X = bank_df.drop(["Exited"], axis=1)
@@ -40,18 +44,12 @@ numerical_transformer = Pipeline(
 
 # Transformers for categorical data
 categorical_transformer = Pipeline(
-    steps=[
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OrdinalEncoder()),
-    ]
+    steps=[("imputer", SimpleImputer(strategy="most_frequent")) , ("encoder", OrdinalEncoder())]
 )
 
 # Combine pipelines using ColumnTransformer
 preproc_pipe = ColumnTransformer(
-    transformers=[
-        ("num", numerical_transformer, num_col),
-        ("cat", categorical_transformer, cat_col),
-    ],
+    transformers=[("num", numerical_transformer, num_col), ("cat", categorical_transformer, cat_col)],
     remainder="passthrough",
 )
 
@@ -63,45 +61,54 @@ model = RandomForestClassifier(n_estimators=100, random_state=125)
 
 # KBest and model pipeline
 train_pipe = Pipeline(
-    steps=[
-        ("KBest", KBest),
-        ("RFmodel", model),
-    ]
+    steps=[("KBest", KBest), ("RFmodel", model)],
 )
 
 # Combining the preprocessing and training pipelines
 complete_pipe = Pipeline(
-    steps=[
-        ("preprocessor", preproc_pipe),
-        ("train", train_pipe),
-    ]
+    steps=[("preprocessor", preproc_pipe), ("train", train_pipe)],
 )
+
+# Log model parameters to MLflow
+mlflow.log_param("n_estimators", model.n_estimators)
+mlflow.log_param("random_state", model.random_state)
 
 # running the complete pipeline
 complete_pipe.fit(X_train, y_train)
 
-
-## Model Evaluation
+# Model Evaluation
 predictions = complete_pipe.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
 f1 = f1_score(y_test, predictions, average="macro")
 
+# Log metrics to MLflow
+mlflow.log_metric("accuracy", accuracy)
+mlflow.log_metric("f1_score", f1)
+
 print("Accuracy:", str(round(accuracy, 2) * 100) + "%", "F1:", round(f1, 2))
 
-
-## Confusion Matrix Plot
-predictions = complete_pipe.predict(X_test)
+# Confusion Matrix Plot
 cm = confusion_matrix(y_test, predictions, labels=complete_pipe.classes_)
-disp = ConfusionMatrixDisplay(
-    confusion_matrix=cm, display_labels=complete_pipe.classes_
-)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=complete_pipe.classes_)
 disp.plot()
 plt.savefig("model_results.png", dpi=120)
 
-## Write metrics to file
+# Log the confusion matrix plot as artifact
+mlflow.log_artifact("model_results.png")
+
+# Write metrics to file (also as artifact)
 with open("metrics.txt", "w") as outfile:
     outfile.write(f"\nAccuracy = {round(accuracy, 2)}, F1 Score = {round(f1, 2)}\n\n")
 
+# Log metrics file as artifact
+mlflow.log_artifact("metrics.txt")
 
-# saving the pipeline
+# Saving the pipeline
 sio.dump(complete_pipe, "bank_pipeline.skops")
+mlflow.log_artifact("bank_pipeline.skops")
+
+# Log the model pipeline with MLflow
+mlflow.sklearn.log_model(complete_pipe, "model")
+
+# End the MLflow run
+mlflow.end_run()
