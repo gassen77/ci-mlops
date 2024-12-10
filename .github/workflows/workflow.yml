@@ -92,12 +92,20 @@ jobs:
       - name: Check Docker container status
         run: |
           docker ps -a
+      # update dependencies inside Docker container
+      - name: update depedencies
+        run: |
+            docker exec ml-container pip install --upgrade numpy
+            docker exec ml-container pip install --upgrade --force-reinstall scikit-learn
+            docker exec ml-container pip install --upgrade --force-reinstall skops
+           
 
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
+          
           docker exec ml-container python /app/train.py  # Or any other script you want to run that uses MLflow
-
+           
       # Run the training script inside the Docker container
       - name: Run training script inside Docker container
         run: |
