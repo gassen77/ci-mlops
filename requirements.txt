@@ -1,8 +1,7 @@
 pandas
 numpy>=1.21.0
-scikit-learn>=1.2.0
+scikit-learn>=1.2.0,<1.3.0  # Ensures compatibility with skops and other dependencies
 matplotlib
-skops==0.6.0 
+skops==0.6.0
 black
 mlflow
-
