@@ -18,6 +18,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
 
 # Start MLflow experiment
+mlflow.set_experiment("bank_classification_experiment")
 mlflow.start_run()
 
 # loading the data
