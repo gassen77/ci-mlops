@@ -123,10 +123,10 @@ jobs:
          # path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
 
       # Cleanup Docker container
-      - name: Cleanup Docker container
-        run: |
-          docker stop ml-container
-          docker rm ml-container
+      # - name: Cleanup Docker container
+       #  run: |
+        #   docker stop ml-container
+         #  docker rm ml-container
 
       # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
