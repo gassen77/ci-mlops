@@ -124,12 +124,9 @@ jobs:
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-          docker exec ml-container python /app/train.py  # Adjust path as needed
+    #       docker exec ml-container python /app/train.py  # Adjust path as needed
 
-      # Run the training script inside the Docker container
-      - name: Run training script inside Docker container
-        run: |
-          docker exec ml-container python /app/train.py  # Adjust path as needed
+   
 
       # Optional: Upload MLflow artifacts
       - name: Upload MLflow artifacts
