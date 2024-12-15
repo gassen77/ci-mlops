@@ -95,32 +95,32 @@ jobs:
           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run Docker container
-      - name: Run Docker container
-        run: |
-          docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
+   #   - name: Run Docker container
+   #     run: |
+    #      docker run --name ml-container -d ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Check if the Docker container is running
-      - name: Check Docker container status
-        run: |
-          docker ps -a
+     # - name: Check Docker container status
+     #   run: |
+      #    docker ps -a
 
 
       # Test ML project inside Docker container
-      - name: Test ML project in Docker container
-        run: |
-          docker exec ml-container python /app/train.py  # Or any other script you want to run that uses MLflow
+     # - name: Test ML project in Docker container
+     #   run: |
+     #     docker exec ml-container python /app/train.py  # Or any other script you want to run that uses MLflow
 
       # Run the training script inside the Docker container
-      - name: Run training script inside Docker container
-        run: |
-          docker exec ml-container python /app/train.py  # Adjust path as needed
+      #- name: Run training script inside Docker container
+       # run: |
+        #  docker exec ml-container python /app/train.py  # Adjust path as needed
 
       # Optional: Upload MLflow artifacts
-      - name: Upload MLflow artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: mlflow-logs
-          path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
+      #- name: Upload MLflow artifacts
+      #  uses: actions/upload-artifact@v3
+       # with:
+        #  name: mlflow-logs
+         # path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
 
       # Cleanup Docker container
       - name: Cleanup Docker container
