@@ -1,6 +1,9 @@
 # Use a Python base image
 FROM python:3.10-slim
 
+# Install necessary dependencies including git
+RUN apt-get update && apt-get install -y git
+
 # Set the working directory in the container
 WORKDIR /app
 
