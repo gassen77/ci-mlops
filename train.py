@@ -21,18 +21,16 @@ from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
 mlflow.set_experiment("bank_classification_experiment")
 mlflow.start_run()
 
-# loading the data
-bank_df = pd.read_csv("train.csv", index_col="id", nrows=1000)
+# loading the data (with a reduced number of rows for limited memory usage)
+bank_df = pd.read_csv("train.csv", index_col="id", nrows=500)  # Limit rows to 500 for less memory consumption
 bank_df = bank_df.drop(["CustomerId", "Surname"], axis=1)
-bank_df = bank_df.sample(frac=1)
+bank_df = bank_df.sample(frac=1)  # Random shuffle (this can be removed if not needed)
 
 # Splitting data into training and testing sets
 X = bank_df.drop(["Exited"], axis=1)
 y = bank_df.Exited
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.3, random_state=125
-)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=125)
 
 # Identify numerical and categorical columns
 cat_col = [1, 2]
@@ -45,7 +43,7 @@ numerical_transformer = Pipeline(
 
 # Transformers for categorical data
 categorical_transformer = Pipeline(
-    steps=[("imputer", SimpleImputer(strategy="most_frequent")) , ("encoder", OrdinalEncoder())]
+    steps=[("imputer", SimpleImputer(strategy="most_frequent")), ("encoder", OrdinalEncoder())]
 )
 
 # Combine pipelines using ColumnTransformer
@@ -57,8 +55,8 @@ preproc_pipe = ColumnTransformer(
 # Selecting the best features
 KBest = SelectKBest(chi2, k="all")
 
-# Random Forest Classifier
-model = RandomForestClassifier(n_estimators=100, random_state=125)
+# Random Forest Classifier with fewer estimators to save memory
+model = RandomForestClassifier(n_estimators=10, random_state=125)  # Use fewer estimators for reduced memory usage
 
 # KBest and model pipeline
 train_pipe = Pipeline(
@@ -113,3 +111,6 @@ mlflow.sklearn.log_model(complete_pipe, "model")
 
 # End the MLflow run
 mlflow.end_run()
+
+# Free up memory
+del X_train, y_train, X_test, y_test, complete_pipe
