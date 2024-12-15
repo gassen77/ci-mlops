@@ -101,9 +101,9 @@ jobs:
           docker tag ghcr.io/${{ github.repository }}/my-ml-image:latest ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Push Docker image to GHCR
-      - name: Push Docker image to GHCR
-        run: |
-          docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+  #      - name: Push Docker image to GHCR
+     #     run: |
+        #    docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run Docker container
       - name: Run Docker container
