@@ -17,14 +17,16 @@ jobs:
 
     steps:
 
-     - name: Add swap space
-  run: |
-    sudo fallocate -l 1G /swapfile
-    sudo chmod 600 /swapfile
-    sudo mkswap /swapfile
-    sudo swapon /swapfile
+      # Add swap space to avoid memory issues
+      - name: Add swap space
+        run: |
+          sudo fallocate -l 1G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+
       # Checkout code
-     - name: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
         with:
           lfs: true
@@ -33,7 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-         python-version: '3.8'
+          python-version: '3.8'
 
       # Cache Python dependencies
       - name: Cache Python dependencies
@@ -44,14 +46,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-python-
 
-
       # Install virtualenv
       - name: Install virtualenv
         run: |
           python -m pip install --upgrade pip
           pip install virtualenv
-
-
 
       # Set up virtual environment
       - name: Set up virtual environment
@@ -66,6 +65,7 @@ jobs:
           pip install -r requirements.txt  # Install project dependencies
           pip install black flake8 mlflow  # Install linters, formatters, and MLflow
 
+      # Clean up old Docker images and containers
       - name: Clean up old Docker images and containers
         run: |
           # Remove all stopped containers
@@ -105,10 +105,10 @@ jobs:
         run: |
           docker tag ghcr.io/${{ github.repository }}/my-ml-image:latest ghcr.io/${{ github.repository }}/my-ml-image:latest
 
-      # Push Docker image to GHCR
-  #      - name: Push Docker image to GHCR
-     #     run: |
-        #    docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+      # Push Docker image to GHCR (this step is commented out if you don't want to push the image yet)
+      # - name: Push Docker image to GHCR
+      #   run: |
+      #     docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run Docker container
       - name: Run Docker container
@@ -123,7 +123,7 @@ jobs:
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-          docker exec ml-container python /app/train.py  # Or any other script you want to run that uses MLflow
+          docker exec ml-container python /app/train.py  # Adjust path as needed
 
       # Run the training script inside the Docker container
       - name: Run training script inside Docker container
@@ -147,6 +147,8 @@ jobs:
       - name: Cleanup Docker image
         run: |
           docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
+
+      # Clean up old Docker images and installations to free up space
       - name: Clean up old Docker images and installations
         run: |
           # Remove all stopped containers
