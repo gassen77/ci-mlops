@@ -107,9 +107,9 @@ jobs:
           docker tag ghcr.io/${{ github.repository }}/my-ml-image:latest ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Push Docker image to GHCR (this step is commented out if you don't want to push the image yet)
-      # - name: Push Docker image to GHCR
-      #   run: |
-      #     docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+      - name: Push Docker image to GHCR
+        run: |
+           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run Docker container
       - name: Run Docker container
@@ -120,7 +120,7 @@ jobs:
       - name: Check Docker container status
         run: |
           docker ps -a
-
+          docker inspect ml-container  
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
