@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+
+   
       # Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
@@ -38,11 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-python-
 
+
       # Install virtualenv
       - name: Install virtualenv
         run: |
           python -m pip install --upgrade pip
           pip install virtualenv
+
+
 
       # Set up virtual environment
       - name: Set up virtual environment
@@ -56,6 +60,17 @@ jobs:
           source venv/bin/activate  # Activate the virtual environment
           pip install -r requirements.txt  # Install project dependencies
           pip install black flake8 mlflow  # Install linters, formatters, and MLflow
+
+      - name: Clean up old Docker images and containers
+        run: |
+          # Remove all stopped containers
+          docker container prune -f
+          
+          # Remove all unused images (old images not referenced by any container)
+          docker image prune -f --all
+
+          # Optional: Remove dangling images (untagged images that aren't used by any container)
+          docker image prune -f
 
       # Lint code using flake8 and allow errors without stopping the workflow
       - name: Lint code with flake8
@@ -127,3 +142,20 @@ jobs:
       - name: Cleanup Docker image
         run: |
           docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
+      - name: Clean up old Docker images and installations
+        run: |
+          # Remove all stopped containers
+          docker container prune -f
+          
+          # Remove all unused images (old images not referenced by any container)
+          docker image prune -f --all
+
+          # Optional: Remove dangling images (untagged images that aren't used by any container)
+          docker image prune -f
+
+          # Purge pip cache to remove unused installation files
+          python -m pip cache purge
+          
+          # Clean up any unnecessary system packages (for Ubuntu environment)
+          sudo apt-get autoremove -y
+          sudo apt-get clean
