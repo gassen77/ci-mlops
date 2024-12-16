@@ -94,7 +94,7 @@ jobs:
       # Push Docker image to GHCR (this step is commented out if you don't want to push the image yet)
       - name: Push Docker image to GHCR
         run: |
-           docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
+          docker push ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Run Docker container
       - name: Run Docker container
@@ -140,16 +140,14 @@ jobs:
           -H "Content-Type: application/json" \
           -d "$LOG_DATA"
 
-    
-
+      # Log build success to Elasticsearch
       - name: Log build success to Elasticsearch
         run: |
-        curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
-        "log": "Build successful", 
-         "status": "success",
-         "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ')"
-    }'
-
+          curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
+            "log": "Build successful", 
+            "status": "success",
+            "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ')"
+          }'
 
       # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
