@@ -139,11 +139,7 @@ jobs:
           -u "$USERNAME:$PASSWORD" \
           -H "Content-Type: application/json" \
           -d "$LOG_DATA"
-
-          curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
-            "log": "Build successful",
-            "status": "success",
-            "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ')"
+          curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d "{\"log\": \"Build successful\", \"status\": \"success\", \"timestamp\": \"$(date --utc +%Y-%m-%dT%H:%M:%SZ)\"}"
 
       # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
