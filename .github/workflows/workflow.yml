@@ -110,7 +110,7 @@ jobs:
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-    #       docker exec ml-container python /app/train.py  # Adjust path as needed
+          # docker exec ml-container python /app/train.py  # Adjust path as needed
 
       # Optional: Upload MLflow artifacts
       - name: Upload MLflow artifacts
@@ -119,7 +119,7 @@ jobs:
           name: mlflow-logs
           path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
 
-# Step to send logs to Elasticsearch
+      # Step to send logs to Elasticsearch
       - name: Send logs to Elasticsearch
         run: |
           # Elasticsearch details
@@ -142,14 +142,13 @@ jobs:
 
       - name: Log build success to Elasticsearch
         run: |
-    curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
-     "log":"Build successful", 
-      "status":"success",
-      "timestamp":"'$(date --utc +%Y-%m-%dT%H:%M:%SZ')" }'    
+          curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
+            "log": "Build successful", 
+            "status": "success",
+            "timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ')"
+          }'
+
       # Optional: Cleanup Docker image if you want to save space
-     
-       - name: Cleanup Docker image
+      - name: Cleanup Docker image
         run: |
           docker rmi -f ghcr.io/${{ github.repository }}/my-ml-image:latest
-
-    
