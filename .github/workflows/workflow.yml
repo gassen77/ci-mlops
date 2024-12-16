@@ -118,11 +118,6 @@ jobs:
         with:
           name: mlflow-logs
           path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
-
-     # Run MLflow UI (for local viewing)
-      - name: Run MLflow UI
-        run: |
-          mlflow ui --host 0.0.0.0 --port 5000
           
       # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
