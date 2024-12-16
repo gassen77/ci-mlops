@@ -139,10 +139,17 @@ jobs:
           -u "$USERNAME:$PASSWORD" \
           -H "Content-Type: application/json" \
           -d "$LOG_DATA"
-          
-      # Optional: Cleanup Docker image if you want to save space
-      - name: Cleanup Docker image
+
+      - name: Log build success to Elasticsearch
         run: |
-          docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
+    curl -X POST "$ES_URL/logs/_doc" -u "$USERNAME:$PASSWORD" -H 'Content-Type: application/json' -d '{
+     "log":"Build successful", 
+      "status":"success",
+      "timestamp":"'$(date --utc +%Y-%m-%dT%H:%M:%SZ')" }'    
+      # Optional: Cleanup Docker image if you want to save space
+     
+       - name: Cleanup Docker image
+        run: |
+          docker rmi -f ghcr.io/${{ github.repository }}/my-ml-image:latest
 
     
