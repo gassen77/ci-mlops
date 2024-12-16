@@ -124,7 +124,7 @@ jobs:
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-    #       docker exec ml-container python /app/train.py  # Adjust path as needed
+           docker exec ml-container python /app/train.py  # Adjust path as needed
 
    
 
@@ -135,32 +135,36 @@ jobs:
           name: mlflow-logs
           path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
 
-      # Cleanup Docker container
-      - name: Cleanup Docker container
+     # Run MLflow UI (for local viewing)
+      - name: Run MLflow UI
         run: |
-          docker stop ml-container
-          docker rm ml-container
+          mlflow ui --host 0.0.0.0 --port 5000
+      # Cleanup Docker container
+      #- name: Cleanup Docker container
+       # run: |
+      #    docker stop ml-container
+      #    docker rm ml-container
 
       # Optional: Cleanup Docker image if you want to save space
-      - name: Cleanup Docker image
-        run: |
-          docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
+     # - name: Cleanup Docker image
+      #  run: |
+       #   docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
 
       # Clean up old Docker images and installations to free up space
-      - name: Clean up old Docker images and installations
-        run: |
+     # - name: Clean up old Docker images and installations
+      #  run: |
           # Remove all stopped containers
-          docker container prune -f
+       #   docker container prune -f
           
           # Remove all unused images (old images not referenced by any container)
-          docker image prune -f --all
+        #  docker image prune -f --all
 
           # Optional: Remove dangling images (untagged images that aren't used by any container)
-          docker image prune -f
+         # docker image prune -f
 
           # Purge pip cache to remove unused installation files
-          python -m pip cache purge
+          #python -m pip cache purge
           
           # Clean up any unnecessary system packages (for Ubuntu environment)
-          sudo apt-get autoremove -y
-          sudo apt-get clean
+          #sudo apt-get autoremove -y
+          #sudo apt-get clean
