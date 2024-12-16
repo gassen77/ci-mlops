@@ -15,7 +15,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-
     steps:
 
       # Add swap space to avoid memory issues
@@ -47,22 +46,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-python-
 
-      # Install virtualenv
-      - name: Install virtualenv
+      # Install Python dependencies directly (without virtualenv)
+      - name: Install Packages
         run: |
           python -m pip install --upgrade pip
-          pip install virtualenv
-
-      # Set up virtual environment
-      - name: Set up virtual environment
-        run: |
-          python -m venv venv  # Create a virtual environment
-          source venv/bin/activate  # Activate the virtual environment
-
-      # Install Python dependencies in virtual environment
-      - name: Install Packages in Virtualenv
-        run: |
-          source venv/bin/activate  # Activate the virtual environment
           pip install -r requirements.txt  # Install project dependencies
           pip install black flake8 mlflow  # Install linters, formatters, and MLflow
 
@@ -81,13 +68,11 @@ jobs:
       # Lint code using flake8 and allow errors without stopping the workflow
       - name: Lint code with flake8
         run: |
-          source venv/bin/activate  # Activate the virtual environment
           flake8 . || true  # Lint all Python files, but don't stop the workflow if errors are found
 
       # Format code using black
       - name: Format code with black
         run: |
-          source venv/bin/activate  # Activate the virtual environment
           black --check .  # Check if the code is formatted, will fail if not
         continue-on-error: true  # Allow the workflow to continue even if the check fails
 
@@ -121,12 +106,11 @@ jobs:
         run: |
           docker ps -a
           docker inspect ml-container  
+
       # Test ML project inside Docker container
       - name: Test ML project in Docker container
         run: |
-           docker exec ml-container python /app/train.py  # Adjust path as needed
-
-   
+    #       docker exec ml-container python /app/train.py  # Adjust path as needed
 
       # Optional: Upload MLflow artifacts
       - name: Upload MLflow artifacts
@@ -139,32 +123,10 @@ jobs:
       - name: Run MLflow UI
         run: |
           mlflow ui --host 0.0.0.0 --port 5000
-      # Cleanup Docker container
-      #- name: Cleanup Docker container
-       # run: |
-      #    docker stop ml-container
-      #    docker rm ml-container
-
+          
       # Optional: Cleanup Docker image if you want to save space
-     # - name: Cleanup Docker image
-      #  run: |
-       #   docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
+      - name: Cleanup Docker image
+        run: |
+          docker rmi ghcr.io/${{ github.repository }}/my-ml-image:latest
 
-      # Clean up old Docker images and installations to free up space
-     # - name: Clean up old Docker images and installations
-      #  run: |
-          # Remove all stopped containers
-       #   docker container prune -f
-          
-          # Remove all unused images (old images not referenced by any container)
-        #  docker image prune -f --all
-
-          # Optional: Remove dangling images (untagged images that aren't used by any container)
-         # docker image prune -f
-
-          # Purge pip cache to remove unused installation files
-          #python -m pip cache purge
-          
-          # Clean up any unnecessary system packages (for Ubuntu environment)
-          #sudo apt-get autoremove -y
-          #sudo apt-get clean
+    
