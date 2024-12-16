@@ -118,6 +118,27 @@ jobs:
         with:
           name: mlflow-logs
           path: /app/mlruns  # Adjust path as needed, assuming MLflow logs are stored here
+
+# Step to send logs to Elasticsearch
+      - name: Send logs to Elasticsearch
+        run: |
+          # Elasticsearch details
+          ES_URL="https://fd49437875ae4b6fa599d5ed206a097a.us-central1.gcp.cloud.es.io:9243"
+          USERNAME="elastic"
+          PASSWORD="JC0KGMwgP5tClAXHKo0N7Lz0"
+
+          # Sample log data to send to Elasticsearch
+          LOG_DATA='{
+            "@timestamp": "'$(date --utc +%Y-%m-%dT%H:%M:%SZ)'",
+            "log_level": "INFO",
+            "message": "This is a test log from GitHub Actions"
+          }'
+
+          # Send the log data to Elasticsearch
+          curl -X POST "$ES_URL/logs/_doc/" \
+          -u "$USERNAME:$PASSWORD" \
+          -H "Content-Type: application/json" \
+          -d "$LOG_DATA"
           
       # Optional: Cleanup Docker image if you want to save space
       - name: Cleanup Docker image
