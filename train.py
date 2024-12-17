@@ -21,14 +21,23 @@ from sklearn.preprocessing import MinMaxScaler, OrdinalEncoder
 mlflow.set_experiment("bank_classification_experiment")
 mlflow.start_run()
 
-# loading the data (with a reduced number of rows for limited memory usage)
-bank_df = pd.read_csv("train.csv", index_col="id", nrows=500)  # Limit rows to 500 for less memory consumption
+# loading the data (without limiting rows)
+try:
+    # Attempt to read CSV with 'id' as index column
+    bank_df = pd.read_csv("train.csv", index_col="id")
+except ValueError:
+    # If 'id' column is not available, load the CSV without specifying the index column
+    bank_df = pd.read_csv("train.csv")
+
+# Drop unnecessary columns
 bank_df = bank_df.drop(["CustomerId", "Surname"], axis=1)
-bank_df = bank_df.sample(frac=1)  # Random shuffle (this can be removed if not needed)
+
+# Optionally shuffle the data (remove if not needed)
+bank_df = bank_df.sample(frac=1)  # Random shuffle
 
 # Splitting data into training and testing sets
 X = bank_df.drop(["Exited"], axis=1)
-y = bank_df.Exited
+y = bank_df["Exited"]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=125)
 
@@ -72,7 +81,7 @@ complete_pipe = Pipeline(
 mlflow.log_param("n_estimators", model.n_estimators)
 mlflow.log_param("random_state", model.random_state)
 
-# running the complete pipeline
+# Running the complete pipeline
 complete_pipe.fit(X_train, y_train)
 
 # Model Evaluation
