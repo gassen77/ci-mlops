@@ -3,6 +3,7 @@ import pandas as pd
 import skops.io as sio
 import mlflow
 import mlflow.sklearn
+import os
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, chi2
@@ -102,18 +103,27 @@ disp.plot()
 plt.savefig("model_results.png", dpi=120)
 
 # Log the confusion matrix plot as artifact
-mlflow.log_artifact("model_results.png")
-
+if os.path.exists("model_results.png"):
+    mlflow.log_artifact("model_results.png")
+else:
+    print("Artifact model_results.png not found!")
 # Write metrics to file (also as artifact)
 with open("metrics.txt", "w") as outfile:
     outfile.write(f"\nAccuracy = {round(accuracy, 2)}, F1 Score = {round(f1, 2)}\n\n")
 
 # Log metrics file as artifact
-mlflow.log_artifact("metrics.txt")
+if os.path.exists("metrics.txt"):
+    mlflow.log_artifact("metrics.txt")
+else:
+    print("Artifact metrics.txt not found!")
 
 # Saving the pipeline
 sio.dump(complete_pipe, "bank_pipeline.skops")
 mlflow.log_artifact("bank_pipeline.skops")
+if os.path.exists("bank_pipeline.skops"):
+    mlflow.log_artifact("bank_pipeline.skops")
+else:
+    print("Artifact bank_pipeline.skops not found!")
 
 # Log the model pipeline with MLflow
 mlflow.sklearn.log_model(complete_pipe, "model")
