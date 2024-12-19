@@ -85,6 +85,12 @@ mlflow.log_param("random_state", model.random_state)
 # Running the complete pipeline
 complete_pipe.fit(X_train, y_train)
 
+# Example input for logging model signature
+input_example = X_train.iloc[0].to_dict()  # Convert one row of training data to a dictionary (as input example)
+
+# Log model with signature and input example
+mlflow.sklearn.log_model(train_pipe, "model", input_example=input_example)
+
 # Model Evaluation
 predictions = complete_pipe.predict(X_test)
 accuracy = accuracy_score(y_test, predictions)
