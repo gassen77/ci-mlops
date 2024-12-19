@@ -88,8 +88,12 @@ complete_pipe.fit(X_train, y_train)
 # Example input for logging model signature
 input_example = X_train.iloc[0].to_dict()  # Convert one row of training data to a dictionary (as input example)
 
+input_example_processed = pd.DataFrame([input_example])  # Convert to DataFrame (2D array)
+input_example_processed = preproc_pipe.transform(input_example_processed)  # Apply the same preprocessing
+
 # Log model with signature and input example
-mlflow.sklearn.log_model(train_pipe, "model", input_example=input_example)
+mlflow.sklearn.log_model(train_pipe, "model", input_example=input_example_processed)
+
 
 # Model Evaluation
 predictions = complete_pipe.predict(X_test)
